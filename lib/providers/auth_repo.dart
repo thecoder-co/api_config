@@ -1,11 +1,8 @@
-import 'package:my_attorney/core/constants/app_endpoints.dart';
-import 'package:my_attorney/core/services/api_handler/api_client_config.dart';
-import 'package:my_attorney/core/services/api_handler/api_handler_models.dart';
-
-import 'package:my_attorney/features/auth/models/login_model.dart';
-
+import 'package:api_config_riverpod/api_handler/api_client_config.dart';
+import 'package:api_config_riverpod/api_handler/api_handler_models.dart';
+import 'package:api_config_riverpod/api_handler/app_endpoints.dart';
+import 'package:api_config_riverpod/providers/models/login_model.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 
 class AuthRepo {
   AuthRepo({
@@ -62,9 +59,6 @@ class AuthRepo {
       newPassword: newPassword ?? this.newPassword,
     );
   }
-
-  @override
-  int get hashCode => UniqueKey().hashCode;
 
   Future<ResponseModel> registerWithEmailAndPassword({
     required String email,

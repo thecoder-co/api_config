@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:my_attorney/core/services/api_handler/talker.dart';
+import 'talker.dart';
 // coverage:ignore-file
 
 ///This interceptor to print form data content of the request body

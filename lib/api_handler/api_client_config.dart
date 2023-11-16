@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:api_config_riverpod/api_handler/app_endpoints.dart';
+import 'package:api_config_riverpod/local_data/local_data.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:my_attorney/core/services/api_handler/bad_certificate_fixer.dart';
-import 'package:my_attorney/core/services/api_handler/default_time_response_interceptor.dart';
-import 'package:my_attorney/core/services/api_handler/error_handler.dart';
-import 'package:my_attorney/core/services/api_handler/talker.dart';
-import 'package:my_attorney/core/services/api_handler/form_data_interceptor.dart';
-import 'package:my_attorney/core/services/local_data/local_data.dart';
+import 'bad_certificate_fixer.dart';
+import 'default_time_response_interceptor.dart';
+import 'error_handler.dart';
+import 'talker.dart';
+import 'form_data_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:my_attorney/core/constants/app_constants.dart';
-import 'package:my_attorney/core/constants/app_endpoints.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
 class BackendService {
@@ -32,10 +31,8 @@ class BackendService {
     //
     _dio.options = BaseOptions(
       baseUrl: otherBaseUrl ?? AppEndpoints.baseUrl,
-      connectTimeout:
-          const Duration(milliseconds: AppConstants.connectionTimeOut),
-      receiveTimeout:
-          const Duration(milliseconds: AppConstants.responseTimeOut),
+      connectTimeout: const Duration(milliseconds: 50000),
+      receiveTimeout: const Duration(milliseconds: 50000),
     );
 
     _dio.options.baseUrl = otherBaseUrl ?? AppEndpoints.baseUrl;
@@ -56,7 +53,7 @@ class BackendService {
 
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: onRequestInterceptors,
+        onRequest: authRequestInterceptors,
       ),
     );
     if (kDebugMode) {
@@ -94,11 +91,11 @@ class BackendService {
     return requestInterceptorHandler.next(options);
   }
 
-  void onRequestInterceptors(
+  void authRequestInterceptors(
     RequestOptions options,
     RequestInterceptorHandler requestInterceptorHandler,
   ) {
-    String? token = LocalData.token;
+    String? token = LocalData.instance.token;
     if (token != null) {
       options.headers.addAll({'Authorization': 'Bearer $token'});
     }

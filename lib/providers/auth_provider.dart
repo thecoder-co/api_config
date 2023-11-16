@@ -1,21 +1,21 @@
-import 'package:my_attorney/features/auth/presentation/email_verification.dart';
-import 'package:my_attorney/features/auth/presentation/reset_password_screen.dart';
-import 'package:my_attorney/features/home/presentation/home.dart';
-import 'package:my_attorney/packages/packages.dart';
-
+import 'package:api_config_riverpod/app_routes.dart';
+import 'package:api_config_riverpod/dialogs/dialog.dart';
+import 'package:api_config_riverpod/local_data/local_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 import 'auth_repo.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthRepo>((ref) {
-  return AuthNotifier(ref, AuthRepo());
+  return AuthNotifier(ref);
 });
 
 class AuthNotifier extends StateNotifier<AuthRepo> {
   final Ref ref;
-  final AuthRepo repo;
-  AuthNotifier(this.ref, this.repo) : super(AuthRepo());
+
+  AuthNotifier(this.ref) : super(AuthRepo());
 
   refreshAuth() {
-    state.isLoggedIn = LocalData.token != null;
+    state.isLoggedIn = LocalData.instance.token != null;
     state = state;
   }
 
@@ -36,14 +36,13 @@ class AuthNotifier extends StateNotifier<AuthRepo> {
   }
 
   logout() {
-    LocalData.removeToken();
+    LocalData.instance.token = null;
     refreshAuth();
-    ref.refresh(authProvider);
   }
 
   Future<void> registerUser(BuildContext context) async {
     Dialogs.showLoadingDialog(context);
-    final res = await repo.registerWithEmailAndPassword(
+    final res = await state.registerWithEmailAndPassword(
       email: state.email!,
       password: state.password!,
       username: state.username!,
@@ -51,7 +50,7 @@ class AuthNotifier extends StateNotifier<AuthRepo> {
     if (!mounted) return;
     pop(context);
     if (res.valid) {
-      pushTo(context, const EmailVerification());
+      // pushTo(context, const EmailVerification());
     } else {
       Dialogs.showErrorSnackbar(context, message: res.error!.message!);
     }
@@ -59,7 +58,7 @@ class AuthNotifier extends StateNotifier<AuthRepo> {
 
   Future<void> verifyUser(BuildContext context) async {
     Dialogs.showLoadingDialog(context);
-    final res = await repo.verifyAccount(
+    final res = await state.verifyAccount(
       email: state.email!,
       otp: state.otp!,
     );
@@ -74,7 +73,7 @@ class AuthNotifier extends StateNotifier<AuthRepo> {
 
   Future<void> resendCode(BuildContext context) async {
     Dialogs.showLoadingDialog(context);
-    final res = await repo.resendOtp(
+    final res = await state.resendOtp(
       email: state.email!,
     );
     if (!mounted) return;
@@ -88,40 +87,34 @@ class AuthNotifier extends StateNotifier<AuthRepo> {
 
   Future<void> loginUser(BuildContext context) async {
     Dialogs.showLoadingDialog(context);
-    final res = await repo.loginWithEmailAndPassword(
+    final res = await state.loginWithEmailAndPassword(
       email: state.email!,
       password: state.password!,
     );
     if (!mounted) return;
     pop(context);
     if (res.valid) {
-      LocalData.setToken(res.data!.data!.authToken!);
-      pushToAndClearStack(context, const Home());
-      // if (ViewedItem.item != null) {
-      //   pushTo(
-      //     context,
-      //     ViewProductScreen(item: ViewedItem.item!),
-      //   );
-      // }
+      LocalData.instance.token = res.data!.data!.authToken!;
+      // pushToAndClearStack(context, const Home());
     } else {
       Dialogs.showErrorSnackbar(context, message: res.error!.message!);
       if (res.statusCode == 401) {
         await resendCode(context);
         if (!mounted) return;
-        pushTo(context, const EmailVerification());
+        // pushTo(context, const EmailVerification());
       }
     }
   }
 
   Future<void> forgotPassword(BuildContext context) async {
     Dialogs.showLoadingDialog(context);
-    final res = await repo.forgotPassword(
+    final res = await state.forgotPassword(
       email: state.email!,
     );
     if (!mounted) return;
     pop(context);
     if (res.valid) {
-      pushTo(context, const ResetPasswordScreen());
+      // pushTo(context, const ResetPasswordScreen());
     } else {
       Dialogs.showErrorSnackbar(context, message: res.error!.message!);
     }
@@ -129,7 +122,7 @@ class AuthNotifier extends StateNotifier<AuthRepo> {
 
   Future<void> resetPassword(BuildContext context) async {
     Dialogs.showLoadingDialog(context);
-    final res = await repo.resetPassword(
+    final res = await state.resetPassword(
       email: state.email!,
       otp: state.otp!,
       password: state.password!,

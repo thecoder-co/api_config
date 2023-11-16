@@ -1,5 +1,7 @@
-import 'package:my_attorney/core/services/api_handler/api_response.dart';
-import 'package:my_attorney/packages/packages.dart';
+import 'dart:io';
+
+import 'api_response.dart';
+import 'package:dio/dio.dart';
 
 Response handleError(DioException e) {
   Response response;
